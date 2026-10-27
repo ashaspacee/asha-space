@@ -601,11 +601,11 @@ body {
 <header class="topbar">
   <div class="topbar-brand">✿ Asha Space ✿</div>
   <div class="topbar-actions">
-    <button class="icon-btn" id="audioBtn" onclick="toggleAudio()" title="BGM"><span id="audioIco">🎵</span></button>
-    <button class="icon-btn" onclick="openM('loyaltyM')" title="Loyalty Card"><span>🃏</span></button>
+    <button class="icon-btn" id="audioBtn" onclick="window.toggleAudio&&window.toggleAudio()" title="BGM"><span id="audioIco">🎵</span></button>
+    <button class="icon-btn" onclick="window.openM&&window.openM('loyaltyM')" title="Loyalty Card"><span>🃏</span></button>
     <button class="icon-btn" title="Wishlist"><span>🤍</span><span class="badge">0</span></button>
     <button class="icon-btn" title="Keranjang"><span>🛒</span><span class="badge" id="cartBadge">0</span></button>
-    <button class="icon-btn" onclick="openSellerPortal()" title="Seller Portal"><span>⚙️</span></button>
+    <button class="icon-btn" onclick="window.openSellerPortal&&window.openSellerPortal()" title="Seller Portal"><span>⚙️</span></button>
   </div>
 </header>
 
@@ -2061,19 +2061,53 @@ function initFirebaseListeners() {
 }
 
 /* ══ EXPOSE ALL FUNCTIONS TO GLOBAL (required for type="module") ══ */
-var _fns = [
-  'toggleAudio','openM','closeM','swSwitchTab','switchTab','openCatalogHome',
-  'checkoutApp','checkoutRbx','checkoutZm','selectApp','selectRbxIdx','selectZmIdx','selectAppVarIdx',
-  'toggleProdEditor','saveAppProduct','addAppVar','delAppVar','addNewProduct','deleteProduct',
-  'addSimpleVar','delSimpleVar','saveSimpleVars','saveSettings','uploadImg','uploadProdImg',
-  'previewSettingImg','previewProdImg','toggleLoyaltyPanel','redeemLoyalty','addLoyaltyManual',
-  'showToast','renderCatalog','renderTerms','renderTesti','renderSwTerms','renderLoyalty',
-  'buildPortal','buildLoyalty','buildProducts','applyConfig','toggleOnlineStatus','toggleStok',
-  'loginSeller','logoutSeller','portalTab','initFirebaseListeners',
-  'openLoyaltyAdmin','addLoyaltyPoints','setPortalTab'
-];
-_fns.forEach(function(n){ if(typeof eval(n) === 'function') window[n] = eval(n); });
-
+window.toggleAudio = toggleAudio;
+window.openM = openM;
+window.closeM = closeM;
+window.swSwitchTab = swSwitchTab;
+window.switchTab = switchTab;
+window.openSellerPortal = openSellerPortal;
+window.openCatalogHome = function(){ openM('catalogM'); };
+window.checkoutApp = checkoutApp;
+window.checkoutRobux = checkoutRobux;
+window.checkoutZoom = checkoutZoom;
+window.selectApp = selectApp;
+window.renderCatalog = renderCatalog;
+window.renderTerms = renderTerms;
+window.renderTesti = renderTesti;
+window.renderSwTerms = renderSwTerms;
+window.renderLoyalty = renderLoyalty;
+window.showToast = showToast;
+window.applyConfig = applyConfig;
+window.toggleOnlineStatus = toggleOnlineStatus;
+window.loginSeller = loginSeller;
+window.logoutSeller = logoutSeller;
+window.portalTab = portalTab;
+window.buildPortal = buildPortal;
+window.buildLoyalty = buildLoyalty;
+window.buildProducts = buildProducts;
+window.toggleStok = toggleStok;
+window.saveSettings = saveSettings;
+window.saveAppProduct = saveAppProduct;
+window.addAppVar = addAppVar;
+window.delAppVar = delAppVar;
+window.addNewProduct = addNewProduct;
+window.deleteProduct = deleteProduct;
+window.addSimpleVar = addSimpleVar;
+window.delSimpleVar = delSimpleVar;
+window.saveSimpleVars = saveSimpleVars;
+window.toggleProdEditor = toggleProdEditor;
+window.uploadImg = uploadImg;
+window.uploadProdImg = uploadProdImg;
+window.previewSettingImg = previewSettingImg;
+window.previewProdImg = previewProdImg;
+window.toggleLoyaltyPanel = toggleLoyaltyPanel;
+window.redeemLoyalty = redeemLoyalty;
+window.addLoyaltyManual = addLoyaltyManual;
+window.openLoyaltyAdmin = openLoyaltyAdmin;
+window.addLoyaltyPoints = addLoyaltyPoints;
+window.setPortalTab = setPortalTab;
+window.initFirebaseListeners = initFirebaseListeners;
 /* ══ HOME BUTTON HELPERS ══ */
 window._openX = function(){ var el=document.getElementById('linkX'); if(el&&el.href&&el.href!==location.href+'#') window.open(el.href,'_blank'); else if(CFG.linkX) window.open(CFG.linkX,'_blank'); };
 window._openWA = function(){ var el=document.getElementById('linkWA'); if(el&&el.href&&el.href!==location.href+'#') window.open(el.href,'_blank'); else if(CFG.waNumber) window.open('https://wa.me/'+CFG.waNumber,'_blank'); };
