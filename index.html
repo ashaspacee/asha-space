@@ -2322,6 +2322,15 @@ function initFirebaseListeners() {
       ptLoy.innerHTML = buildLoyalty();
     }
   });
+  // Listen apps/produk dari Firebase (sync seller → customer)
+  fbListen('apps', function(fbApps) {
+    if(!fbApps || !Array.isArray(fbApps)) return;
+    var isPortalOpen = document.getElementById('portalM') && document.getElementById('portalM').classList.contains('open');
+    if(isPortalOpen) return; // seller lagi edit, jangan overwrite
+    APP_PRODUCTS = fbApps;
+    ss('asha_apps', APP_PRODUCTS);
+    renderCatalog();
+  });
   // Listen CFG dari Firebase (untuk customer)
   fbListen('cfg', function(fbCfg) {
     if(!fbCfg) return;
