@@ -919,32 +919,41 @@ body {
 <div class="toast" id="toast"></div>
 
 <script type="module">
-/* ══════════════════════════════════════════════
-   FIREBASE SETUP
-   ══════════════════════════════════════════════ */
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getDatabase, ref, set, get, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAgXq-IHxzbhzA85VyRsxdlESmunptdSRw",
-  authDomain: "asha-space.firebaseapp.com",
-  databaseURL: "https://asha-space-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "asha-space",
-  storageBucket: "asha-space.firebasestorage.app",
-  messagingSenderId: "411159525469",
-  appId: "1:411159525469:web:acae29a078c1fb1f0cb5b4"
-};
-const fbApp = initializeApp(firebaseConfig);
-const db = getDatabase(fbApp);
-
-/* Save to Firebase */
-function fbSet(path, val) { return set(ref(db, path), val); }
-function fbUpdate(path, val) { return update(ref(db, path), val); }
-function fbListen(path, cb) { onValue(ref(db, path), snap => cb(snap.val())); }
-function fbGet(path) { return get(ref(db, path)).then(s => s.val()); }
-
-/* Make all functions global so onclick="" works */
-window.fbSet = fbSet; window.fbUpdate = fbUpdate;
+/* ══ FIREBASE SETUP (module scope — hanya untuk Firebase) ══ */
+try {
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getDatabase, ref, set, get, onValue, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+  const firebaseConfig = {
+    apiKey: "AIzaSyAgXq-IHxzbhzA85VyRsxdlESmunptdSRw",
+    authDomain: "asha-space.firebaseapp.com",
+    databaseURL: "https://asha-space-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "asha-space",
+    storageBucket: "asha-space.firebasestorage.app",
+    messagingSenderId: "411159525469",
+    appId: "1:411159525469:web:acae29a078c1fb1f0cb5b4"
+  };
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getDatabase(fbApp);
+  window._fbRef   = (path) => ref(db, path);
+  window._fbSet   = (path, val) => set(ref(db, path), val);
+  window._fbUpdate= (path, val) => update(ref(db, path), val);
+  window._fbListen= (path, cb) => onValue(ref(db, path), snap => cb(snap.val()));
+  window._fbGet   = (path) => get(ref(db, path)).then(s => s.val());
+  window._fbReady = true;
+  // trigger listeners now that firebase is ready
+  if (window._onFbReady) window._onFbReady();
+} catch(e) {
+  console.warn('Firebase tidak tersambung, mode offline:', e);
+  window._fbReady = false;
+  window._fbSet = window._fbUpdate = window._fbListen = window._fbGet = () => Promise.resolve();
+}
+</script>
+<script>
+/* ══ MAIN SCRIPT (non-module, global scope) ══ */
+function fbSet(p,v)    { return window._fbSet   ? window._fbSet(p,v)   : Promise.resolve(); }
+function fbUpdate(p,v) { return window._fbUpdate ? window._fbUpdate(p,v): Promise.resolve(); }
+function fbListen(p,cb){ if(window._fbListen) window._fbListen(p,cb); }
+function fbGet(p)      { return window._fbGet   ? window._fbGet(p)     : Promise.resolve(null); }
 
 /* ══════════════════════════════════════════════
    STATE — loaded from localStorage, falls back to defaults
@@ -1045,7 +1054,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTerms();
   renderTesti();
   renderSwTerms();
-  initFirebaseListeners();
+  // Firebase mungkin belum siap (async module), tunggu via callback
+  if (window._fbReady) {
+    initFirebaseListeners();
+  } else {
+    window._onFbReady = initFirebaseListeners;
+  }
 });
 
 function applyConfig() {
