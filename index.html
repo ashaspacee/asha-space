@@ -1483,10 +1483,10 @@ function renderLoyaltyHTML() {
       <div style="font-size:13px;color:var(--fg-soft);text-align:center">Kumpulkan stamp &amp; dapatkan reward spesial ♡<br><b>+1 Stamp</b> setiap pembelian App Premium min. Rp15.000</div>
       <div id="lyErr" style="color:#d04060;font-size:12px;text-align:center;display:none"></div>
       <div style="background:var(--card2);border-radius:var(--r-lg);padding:14px;border:1.5px solid var(--border2);display:flex;flex-direction:column;gap:9px">
-        <div style="font-family:var(--font-h);font-weight:700;font-size:13px">Daftar / Masuk</div>
-        <input class="fi" id="lyUn" placeholder="Username unikmu (min. 3 karakter)" maxlength="20"/>
-        <button class="btn-pri" style="width:100%" onclick="loyLogin()">✓ Masuk / Daftar</button>
-        <div style="font-size:11px;color:var(--fg-soft);text-align:center">Username baru = otomatis daftar • Sudah ada = langsung masuk</div>
+        <div style="font-family:var(--font-h);font-weight:700;font-size:13px">🔍 Cari Username Kamu</div>
+        <input class="fi" id="lyUn" placeholder="Ketik username kamu..." maxlength="30" onkeydown="if(event.key==='Enter')loyLogin()"/>
+        <button class="btn-pri" style="width:100%" onclick="loyLogin()">✓ Lihat Loyalty Card</button>
+        <div style="font-size:11px;color:var(--fg-soft);text-align:center">Username didaftarkan oleh admin setelah order pertamamu ✿</div>
       </div>
     </div>`;
   } else {
@@ -1528,9 +1528,12 @@ function renderLoyalty() {
 function loyLogin() {
   const val = document.getElementById('lyUn')?.value?.trim();
   const err = document.getElementById('lyErr');
-  if(!val||val.length<3) { if(err){err.textContent='Username minimal 3 karakter!';err.style.display='block';} return; }
+  if(!val||val.length<2) { if(err){err.textContent='Ketik username kamu dulu!';err.style.display='block';} return; }
   const key = val.toLowerCase();
-  if(!LOYALTY_USERS[key]) { LOYALTY_USERS[key]={username:val,stamps:0,vouchers:[],joined:new Date().toLocaleDateString('id-ID')}; ss('asha_loyalty',LOYALTY_USERS); }
+  if(!LOYALTY_USERS[key]) {
+    if(err){ err.textContent='Username "'+val+'" tidak ditemukan. Hubungi admin untuk didaftarkan ✿'; err.style.display='block'; }
+    return;
+  }
   loyUser = key; ss('asha_ly_me',key);
   renderLoyalty();
 }
@@ -1849,29 +1852,82 @@ function saveSimpleVars(type) {
 
 function buildLoyalty() {
   const users = Object.entries(LOYALTY_USERS);
-  if(!users.length) return `<div style="text-align:center;color:var(--fg-soft);font-size:13px;padding:16px">Belum ada pelanggan terdaftar.</div>`;
-  return `<div style="display:flex;flex-direction:column;gap:7px">
-    ${users.map(([k,u])=>`
-      <div class="loyalty-user-item">
-        <div>
-          <div class="lui-name">${u.username}</div>
-          <div class="lui-stamps">Stamp: ${u.stamps||0}/8 ${(u.stamps||0)>=8?'🎉':''}${(u.stamps||0)>=4&&(u.stamps||0)<8?'⭐':''}</div>
+  const stampBar = (s) => {
+    let h = '';
+    for(let i=0;i<8;i++) h += `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${i<s?'linear-gradient(135deg,#FFADD2,#71BAEA)':'#e8eef6'};border:1.5px solid ${i<s?'#ffadd2':'#ccd8e8'};margin:1px"></span>`;
+    return h;
+  };
+  const userRows = users.length ? users.map(([k,u])=>`
+    <div class="loyalty-user-item" style="flex-direction:column;align-items:stretch;gap:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="min-width:0">
+          <div class="lui-name" style="font-size:13.5px">@${k}</div>
+          ${u.username&&u.username!==k?`<div style="font-size:11px;color:var(--fg-mid)">${u.username}</div>`:''}
+          <div class="lui-stamps" style="margin-top:2px">${stampBar(u.stamps||0)} <span style="font-size:11px;margin-left:3px">${u.stamps||0}/8</span></div>
+          ${u.joined?`<div style="font-size:10.5px;color:var(--fg-soft);margin-top:1px">Bergabung: ${u.joined}</div>`:''}
         </div>
-        <div class="lui-actions">
+        <div class="lui-actions" style="flex-shrink:0">
           <button class="stamp-adj-btn" onclick="adjStamp('${k}',-1)" title="Kurangi stamp">−</button>
-          <span style="min-width:24px;text-align:center;font-family:var(--font-h);font-weight:800;font-size:14px">${u.stamps||0}</span>
-          <button class="stamp-adj-btn" onclick="adjStamp('${k}',1)" title="Tambah stamp">+</button>
+          <span style="min-width:26px;text-align:center;font-family:var(--font-h);font-weight:900;font-size:16px;color:var(--fg)">${u.stamps||0}</span>
+          <button class="stamp-adj-btn" onclick="adjStamp('${k}',1)" title="Tambah stamp" style="background:linear-gradient(135deg,#fff0f8,#e8f4fd);border-color:#FFADD2;color:#c04080">+</button>
         </div>
-      </div>`).join('')}
-    <button class="btn-sm" style="margin-top:6px;color:#c04060;border-color:#f0c0c8" onclick="if(confirm('Reset semua loyalty users?')){LOYALTY_USERS={};ss('asha_loyalty',{});renderPortal()}">🗑️ Reset Semua Loyalty</button>
+      </div>
+      ${(u.stamps||0)>=8?`<div style="font-size:11px;background:linear-gradient(135deg,#fff9e6,#fff3cc);border:1px solid #f0d060;border-radius:8px;padding:5px 9px;color:#7a5000">🎉 Kartu penuh! Eligible Free App — hubungi customer untuk klaim</div>`:''}
+      ${(u.stamps||0)>=4&&(u.stamps||0)<8?`<div style="font-size:11px;background:linear-gradient(135deg,#f0fff4,#e6faf0);border:1px solid #a0d8b0;border-radius:8px;padding:5px 9px;color:#206040">⭐ Eligible Diskon 15% — hubungi customer untuk klaim</div>`:''}
+    </div>`).join('')
+  : `<div style="text-align:center;color:var(--fg-soft);font-size:13px;padding:12px 0">Belum ada pelanggan terdaftar.</div>`;
+
+  return `<div style="display:flex;flex-direction:column;gap:10px">
+    <!-- Add User -->
+    <div style="background:linear-gradient(135deg,#fff0f8,#eef8fd);border:1.5px dashed #FFADD2;border-radius:12px;padding:12px 13px">
+      <div style="font-family:var(--font-h);font-weight:800;font-size:12px;color:var(--p-pink);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">➕ Tambah Pelanggan Baru</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <input id="loy-new-name" class="setting-input" placeholder="Username pelanggan (contoh: kak_rara)..." style="margin:0;font-size:12.5px" onkeydown="if(event.key==='Enter')addLoyaltyUser()" />
+        <div style="font-size:10.5px;color:var(--fg-soft)">Username ini yang dipakai customer untuk cek loyalty card mereka</div>
+        <button onclick="addLoyaltyUser()" style="padding:8px 14px;border-radius:10px;border:none;background:linear-gradient(135deg,#FFADD2,#71BAEA);color:#fff;font-family:var(--font-h);font-weight:800;font-size:12px;cursor:pointer;align-self:flex-end">Tambah ✿</button>
+      </div>
+    </div>
+    <!-- User List -->
+    <div style="display:flex;flex-direction:column;gap:7px">
+      ${userRows}
+    </div>
+    ${users.length?`<button class="btn-sm" style="margin-top:2px;color:#c04060;border-color:#f0c0c8;font-size:11px" onclick="if(confirm('Reset semua loyalty users? Tidak bisa di-undo!'))loyaltyResetAll()">🗑️ Reset Semua Loyalty</button>`:''}
   </div>`;
 }
+
+function addLoyaltyUser() {
+  const inp = document.getElementById('loy-new-name');
+  if(!inp) return;
+  const raw = inp.value.trim();
+  if(!raw) { showToast('Username tidak boleh kosong!'); return; }
+  // username: lowercase, no space, alphanumeric + underscore only
+  const key = raw.toLowerCase().replace(/[^a-z0-9_]/g,'');
+  if(!key) { showToast('Username hanya boleh huruf, angka, dan _'); return; }
+  if(LOYALTY_USERS[key]) { showToast('@'+key+' sudah terdaftar!'); return; }
+  LOYALTY_USERS[key] = { username: raw, key: key, stamps: 0, vouchers: [], joined: new Date().toLocaleDateString('id-ID') };
+  ss('asha_loyalty', LOYALTY_USERS);
+  fbSet('loyalty', LOYALTY_USERS);
+  inp.value = '';
+  renderPortal();
+  showToast('✿ @'+key+' berhasil ditambahkan!');
+}
+
+function loyaltyResetAll() {
+  LOYALTY_USERS = {};
+  ss('asha_loyalty', {});
+  fbSet('loyalty', {});
+  renderPortal();
+  showToast('Semua loyalty direset');
+}
+
 function adjStamp(key,delta) {
   if(!LOYALTY_USERS[key]) return;
-  LOYALTY_USERS[key].stamps = Math.max(0,Math.min(8,(LOYALTY_USERS[key].stamps||0)+delta));
-  ss('asha_loyalty',LOYALTY_USERS);
+  const prev = LOYALTY_USERS[key].stamps||0;
+  LOYALTY_USERS[key].stamps = Math.max(0, prev+delta);
+  ss('asha_loyalty', LOYALTY_USERS);
+  fbSet('loyalty', LOYALTY_USERS);
   renderPortal();
-  showToast((delta>0?'+1':'−1')+' stamp untuk '+LOYALTY_USERS[key].username);
+  showToast((delta>0?'✿ +1':'−1')+' stamp → '+LOYALTY_USERS[key].username+' ('+LOYALTY_USERS[key].stamps+'/8)');
 }
 
 function buildSettings() {
@@ -2063,6 +2119,22 @@ function initFirebaseListeners() {
       }
     });
   });
+  // Listen loyalty dari Firebase (sync antar device)
+  fbListen('loyalty', function(fbLoy) {
+    if(!fbLoy) return;
+    LOYALTY_USERS = Object.assign({}, fbLoy);
+    ss('asha_loyalty', LOYALTY_USERS);
+    // refresh UI kalau panel terbuka
+    var loyBody = document.getElementById('loyaltyBody');
+    if(loyBody && loyBody.closest('.overlay.open')) renderLoyalty();
+    var swLoy = document.getElementById('swp-loyalty');
+    if(swLoy && swLoy.style.display !== 'none') renderSwLoyalty();
+    // refresh portal loyalty tab kalau terbuka
+    var ptLoy = document.getElementById('pt-loyalty');
+    if(ptLoy && ptLoy.classList.contains('active')) {
+      ptLoy.innerHTML = buildLoyalty();
+    }
+  });
   // Listen CFG dari Firebase (untuk customer)
   fbListen('cfg', function(fbCfg) {
     if(!fbCfg) return;
@@ -2137,6 +2209,9 @@ window.redeemLoyalty = redeemLoyalty;
 window.addLoyaltyManual = addLoyaltyManual;
 window.openLoyaltyAdmin = openLoyaltyAdmin;
 window.addLoyaltyPoints = addLoyaltyPoints;
+window.addLoyaltyUser = addLoyaltyUser;
+window.loyaltyResetAll = loyaltyResetAll;
+window.adjStamp = adjStamp;
 window.setPortalTab = setPortalTab;
 window.initFirebaseListeners = initFirebaseListeners;
 /* ══ HOME BUTTON HELPERS ══ */
