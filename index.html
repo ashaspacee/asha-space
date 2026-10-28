@@ -1913,10 +1913,31 @@ function saveAppProduct(pi) {
   APP_PRODUCTS[pi].icon   = icon;
   APP_PRODUCTS[pi].desc   = desc;
   APP_PRODUCTS[pi].imgUrl = imgUrl;
+  // baca ulang semua varian & durasi dari DOM supaya yakin tersimpan
+  APP_PRODUCTS[pi].variants.forEach((v,vi) => {
+    const labelEl = document.querySelector(`#pvar-${pi}-${vi} .var-editor-label`);
+    if(labelEl) v.label = labelEl.value;
+    const noteInputs = document.querySelectorAll(`#pvar-${pi}-${vi} .var-editor-label`);
+    if(noteInputs[1]) v.note = noteInputs[1].value;
+    if(v.durations) {
+      v.durations.forEach((d,di) => {
+        const row = document.getElementById(`pdur-${pi}-${vi}-${di}`) || document.querySelector(`[data-pdur="${pi}-${vi}-${di}"]`);
+        if(row) {
+          const inputs = row.querySelectorAll('input');
+          if(inputs[0]) d.label = inputs[0].value;
+          if(inputs[1]) d.price = parseInt(inputs[1].value)||0;
+        }
+      });
+    } else {
+      const priceEl = document.querySelector(`#pvar-${pi}-${vi} .var-editor-price`);
+      if(priceEl) v.price = parseInt(priceEl.value)||0;
+    }
+  });
   // update name display in editor header
   const nameEl = document.querySelector('#pec-'+pi+' .prod-editor-name');
   if(nameEl) nameEl.textContent = name;
   ss('asha_apps', APP_PRODUCTS);
+  fbSet('apps', APP_PRODUCTS);
   renderCatalog();
   // refresh thumbnail in editor header
   const th = document.getElementById(`pec-thumb-${pi}`);
