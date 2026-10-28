@@ -1307,22 +1307,11 @@ function openForm(type) {
     title.textContent='📱 Order App Premium';
     var oid2 = genOID('APP');
     var appO = selApp || APP_PRODUCTS[0];
-    var firstVar2 = appO.variants[0];
-    var hasDur2 = firstVar2 && firstVar2.durations;
-    var firstDurPrice2 = hasDur2 ? firstVar2.durations[0].price : (firstVar2 ? (firstVar2.price||0) : 0);
     var varGridHtml = appO.variants.map(function(av,i) {
-      var dispPrice = av.durations ? fmt(av.durations[0].price)+'+' : fmt(av.price||0);
-      return '<div class="var-item '+(i===0?'sel':'')+'" onclick="pickAppVar(this,'+i+')">'
+      return '<div class="var-item" onclick="pickAppVar(this,'+i+')" style="padding:10px 13px">'
         +'<span class="var-name">'+av.label+'</span>'
-        +'<span class="var-price">'+dispPrice+'</span>'
         +'</div>';
     }).join('');
-    var durGridHtml = hasDur2 ? firstVar2.durations.map(function(d,di) {
-      return '<div class="var-item '+(di===0?'sel':'')+'" onclick="pickAppDur(this,'+di+')">'
-        +'<span class="var-name">📅 '+d.label+'</span>'
-        +'<span class="var-price">'+fmt(d.price)+'</span>'
-        +'</div>';
-    }).join('') : '';
     body.innerHTML='<div class="fsec">'
       +'<div class="oid-chip">🎫 '+oid2+'</div>'
       +'<div class="fg"><label class="fl">Produk</label>'
@@ -1331,18 +1320,18 @@ function openForm(type) {
           +'<div class="prod-info"><div class="prod-name">'+appO.name+'</div><div class="prod-desc">'+appO.desc+'</div></div>'
         +'</div></div>'
       +'<div class="fg"><label class="fl">Pilih Varian</label><div id="aVarGrid" style="display:flex;flex-direction:column;gap:6px">'+varGridHtml+'</div></div>'
-      +(hasDur2 ? '<div class="fg" id="aDurRow"><label class="fl">Pilih Durasi</label><div id="aDurGrid" style="display:flex;flex-direction:column;gap:6px">'+durGridHtml+'</div></div>' : '')
+      +'<div class="fg" id="aDurRow" style="display:none"><label class="fl">Pilih Durasi</label><div id="aDurGrid" style="display:flex;flex-direction:column;gap:6px"></div></div>'
       +'<div class="fg"><label class="fl">Email <span style="text-transform:none;font-weight:500;letter-spacing:0">(opsional)</span></label><input class="fi" id="aEm" type="email" placeholder="masukkan email jika dibutuhkan"/></div>'
       +'<div class="fg"><label class="fl">Merk &amp; Tipe Device</label><input class="fi" id="aDev" placeholder="contoh: iPhone 13, Samsung A54, Laptop Asus"/></div>'
       +'<div class="fg"><label class="fl">Lokasi (Kota/Provinsi)</label><input class="fi" id="aLoc" placeholder="contoh: Jakarta, Surabaya, Bandung"/></div>'
       +'<div class="fg"><label class="fl">Nomor WhatsApp Kamu</label><input class="fi" id="aWa" type="tel" placeholder="08xxxxxxxxxx"/></div>'
       +'<div class="pay-lock">🔒 Metode Bayar: <strong>QRIS</strong></div>'
       +'<div class="est-chip">⏱️ Estimasi: 1 – 15 Menit</div>'
-      +'<div id="lsBadge" class="stamp-badge" style="display:'+(firstDurPrice2>=15000?'flex':'none')+'">✨ +1 Loyalty Stamp Eligible — Pembelian ini memenuhi syarat stamp!</div>'
+      +'<div id="lsBadge" class="stamp-badge" style="display:none">✨ +1 Loyalty Stamp Eligible — Pembelian ini memenuhi syarat stamp!</div>'
       +'<button class="cta" onclick="checkoutApp(\''+oid2+'\',\''+appO.id+'\')">💬 Checkout via WhatsApp</button>'
       +'</div>';
-    selAppVarIdx = 0;
-    window._selAppDurIdx = 0;
+    selAppVarIdx = -1;
+    window._selAppDurIdx = -1;
   }
   openM('orderM');
 }
@@ -1442,18 +1431,18 @@ function pickAppVar(el,i)  {
         <span class="var-name">📅 ${d.label}</span>
         <span class="var-price">${fmt(d.price)}</span>
       </div>`).join('');
-    if(durGrid) { durGrid.innerHTML = html; }
+    if(durGrid) { durGrid.innerHTML = html; if(durRow) durRow.style.display=''; }
     else {
-      // kalau belum ada durRow, inject setelah aVarGrid
-      const varRow = el.closest('.fg');
-      if(varRow) {
+      // inject durRow setelah fg yang berisi aVarGrid
+      const varGrid = document.getElementById('aVarGrid');
+      const varFg = varGrid ? varGrid.closest('.fg') : null;
+      if(varFg) {
         const newRow = document.createElement('div');
         newRow.className='fg'; newRow.id='aDurRow';
         newRow.innerHTML=`<label class="fl">Pilih Durasi</label><div id="aDurGrid" style="display:flex;flex-direction:column;gap:6px">${html}</div>`;
-        varRow.insertAdjacentElement('afterend', newRow);
+        varFg.insertAdjacentElement('afterend', newRow);
       }
     }
-    if(durRow) durRow.style.display='';
     window._selAppDurIdx = 0;
     // update stamp badge dengan harga durasi pertama
     const badge = document.getElementById('lsBadge');
@@ -1782,24 +1771,29 @@ function buildProducts() {
         <div style="font-size:11px;color:var(--fg-soft);margin-bottom:7px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Varian &amp; Durasi / Harga</div>
         <div id="pvars-${pi}">${p.variants.map((v,vi)=>`
           <div style="border:1.5px solid var(--border2);border-radius:10px;padding:9px 10px;margin-bottom:7px;background:var(--card2)" id="pvar-${pi}-${vi}">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
               <input class="var-editor-label" style="flex:1" value="${v.label||''}" placeholder="Nama varian (mis: Sharing 1U)" onchange="APP_PRODUCTS[${pi}].variants[${vi}].label=this.value"/>
               <button class="var-del-btn" onclick="delAppVar(${pi},${vi})" title="Hapus varian" style="flex-shrink:0">✕</button>
             </div>
+            <input class="var-editor-label" style="width:100%;margin-bottom:7px;font-size:11.5px" value="${v.note||''}" placeholder="Keterangan varian (mis: cocok untuk 1 akun, dll)" onchange="APP_PRODUCTS[${pi}].variants[${vi}].note=this.value"/>
             ${v.durations ? `
             <div style="font-size:10.5px;color:var(--fg-soft);font-weight:700;margin-bottom:4px;text-transform:uppercase">Durasi &amp; Harga</div>
-            <div id="pdurs-${pi}-${vi}">${v.durations.map((d,di)=>`
-              <div class="var-editor-row" id="pdur-${pi}-${vi}-${di}" style="margin-bottom:4px">
+            <div data-pdurs="${pi}-${vi}" id="pdurs-${pi}-${vi}">${v.durations.map((d,di)=>`
+              <div class="var-editor-row" data-pdur="${pi}-${vi}-${di}" id="pdur-${pi}-${vi}-${di}" style="margin-bottom:4px">
                 <input class="var-editor-label" value="${d.label||''}" placeholder="Durasi (mis: 1 Bulan)" onchange="APP_PRODUCTS[${pi}].variants[${vi}].durations[${di}].label=this.value"/>
                 <input class="var-editor-price" type="number" value="${d.price||0}" min="0" placeholder="Harga" onchange="APP_PRODUCTS[${pi}].variants[${vi}].durations[${di}].price=parseInt(this.value)||0"/>
                 <button class="var-del-btn" onclick="delAppDur(${pi},${vi},${di})" title="Hapus durasi">✕</button>
               </div>`).join('')}
             </div>
-            <button class="add-var-btn" style="margin:2px 0 0;font-size:11px;padding:4px 10px" onclick="addAppDur(${pi},${vi})">+ Durasi</button>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="add-var-btn" style="margin:0;font-size:11px;padding:4px 10px" onclick="addAppDur(${pi},${vi})">+ Durasi</button>
+              <button class="save-btn" style="margin:0;font-size:11px;padding:4px 12px" onclick="saveAppProduct(${pi})">💾 Simpan</button>
+            </div>
             ` : `
             <div style="display:flex;gap:6px;align-items:center">
               <input class="var-editor-price" type="number" value="${v.price||0}" min="0" placeholder="Harga flat" style="width:120px" onchange="APP_PRODUCTS[${pi}].variants[${vi}].price=parseInt(this.value)||0"/>
               <button class="add-var-btn" style="margin:0;font-size:10.5px;padding:4px 8px" onclick="convertToDur(${pi},${vi})">+ Tambah Durasi</button>
+              <button class="save-btn" style="margin:0;font-size:11px;padding:4px 12px" onclick="saveAppProduct(${pi})">💾 Simpan</button>
             </div>
             `}
           </div>`).join('')}
@@ -1933,41 +1927,65 @@ function saveAppProduct(pi) {
   toggleProdEditor(pi);
   showToast('✓ Produk disimpan!');
 }
+function _makeDurRow(pi,vi,di,d) {
+  const wrap = document.createElement('div');
+  wrap.className='var-editor-row'; wrap.id=`pdur-${pi}-${vi}-${di}`; wrap.style.marginBottom='4px';
+  wrap.innerHTML=`<input class="var-editor-label" value="${d.label||''}" placeholder="Durasi (mis: 1 Bulan)" onchange="APP_PRODUCTS[${pi}].variants[${vi}].durations[${di}].label=this.value"/>
+    <input class="var-editor-price" type="number" value="${d.price||0}" min="0" placeholder="Harga" onchange="APP_PRODUCTS[${pi}].variants[${vi}].durations[${di}].price=parseInt(this.value)||0"/>
+    <button class="var-del-btn" onclick="delAppDur(${pi},${vi},${di})" title="Hapus durasi">✕</button>`;
+  return wrap;
+}
 function addAppVar(pi) {
-  // default: varian baru pakai sistem durasi
+  const vi = APP_PRODUCTS[pi].variants.length;
   APP_PRODUCTS[pi].variants.push({label:'Varian Baru', durations:[{label:'1 Bulan',price:0}]});
-  const pt = document.getElementById('pt-products');
-  if(pt) pt.innerHTML = buildProducts();
+  ss('asha_apps',APP_PRODUCTS);
+  const container = document.getElementById(`pvars-${pi}`);
+  if(!container){ const pt=document.getElementById('pt-products'); if(pt){const s=pt.scrollTop;pt.innerHTML=buildProducts();pt.scrollTop=s;} return; }
+  const block = document.createElement('div');
+  block.id=`pvar-${pi}-${vi}`; block.style.cssText='border:1.5px solid var(--border2);border-radius:10px;padding:9px 10px;margin-bottom:7px;background:var(--card2)';
+  block.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+    <input class="var-editor-label" style="flex:1" value="Varian Baru" placeholder="Nama varian" onchange="APP_PRODUCTS[${pi}].variants[${vi}].label=this.value"/>
+    <button class="var-del-btn" onclick="delAppVar(${pi},${vi})" title="Hapus varian" style="flex-shrink:0">✕</button>
+  </div>
+  <div style="font-size:10.5px;color:var(--fg-soft);font-weight:700;margin-bottom:4px;text-transform:uppercase">Durasi &amp; Harga</div>
+  <div id="pdurs-${pi}-${vi}"><div class="var-editor-row" id="pdur-${pi}-${vi}-0" style="margin-bottom:4px">
+    <input class="var-editor-label" value="1 Bulan" placeholder="Durasi" onchange="APP_PRODUCTS[${pi}].variants[${vi}].durations[0].label=this.value"/>
+    <input class="var-editor-price" type="number" value="0" min="0" placeholder="Harga" onchange="APP_PRODUCTS[${pi}].variants[${vi}].durations[0].price=parseInt(this.value)||0"/>
+    <button class="var-del-btn" onclick="delAppDur(${pi},${vi},0)" title="Hapus durasi">✕</button>
+  </div></div>
+  <button class="add-var-btn" style="margin:2px 0 0;font-size:11px;padding:4px 10px" onclick="addAppDur(${pi},${vi})">+ Durasi</button>`;
+  container.appendChild(block);
 }
 function delAppVar(pi,vi) {
   if(APP_PRODUCTS[pi].variants.length<=1){showToast('Minimal 1 varian!');return;}
   APP_PRODUCTS[pi].variants.splice(vi,1);
   ss('asha_apps',APP_PRODUCTS);
-  const pt = document.getElementById('pt-products');
-  if(pt) pt.innerHTML = buildProducts();
+  const el = document.getElementById(`pvar-${pi}-${vi}`);
+  if(el) el.remove(); else { const pt=document.getElementById('pt-products'); if(pt){const s=pt.scrollTop;pt.innerHTML=buildProducts();pt.scrollTop=s;} }
 }
 function addAppDur(pi,vi) {
   if(!APP_PRODUCTS[pi].variants[vi].durations) APP_PRODUCTS[pi].variants[vi].durations=[];
+  const di = APP_PRODUCTS[pi].variants[vi].durations.length;
   APP_PRODUCTS[pi].variants[vi].durations.push({label:'Durasi Baru',price:0});
-  const pt = document.getElementById('pt-products');
-  if(pt) pt.innerHTML = buildProducts();
+  // inject DOM langsung — cari container dengan data-attr fallback ke id
+  const container = document.querySelector(`[data-pdurs="${pi}-${vi}"]`) || document.getElementById(`pdurs-${pi}-${vi}`);
+  if(container) { container.appendChild(_makeDurRow(pi,vi,di,{label:'Durasi Baru',price:0})); }
+  else { ss('asha_apps',APP_PRODUCTS); const pt=document.getElementById('pt-products'); if(pt){const s=pt.scrollTop;pt.innerHTML=buildProducts();pt.scrollTop=s;} }
 }
 function delAppDur(pi,vi,di) {
   const durs = APP_PRODUCTS[pi].variants[vi].durations;
   if(!durs||durs.length<=1){showToast('Minimal 1 durasi!');return;}
   durs.splice(di,1);
-  ss('asha_apps',APP_PRODUCTS);
-  const pt = document.getElementById('pt-products');
-  if(pt) pt.innerHTML = buildProducts();
+  const el = document.querySelector(`[data-pdur="${pi}-${vi}-${di}"]`) || document.getElementById(`pdur-${pi}-${vi}-${di}`);
+  if(el) el.remove(); else { ss('asha_apps',APP_PRODUCTS); const pt=document.getElementById('pt-products'); if(pt){const s=pt.scrollTop;pt.innerHTML=buildProducts();pt.scrollTop=s;} }
 }
 function convertToDur(pi,vi) {
-  // konversi varian flat harga → varian dengan sistem durasi
   const v = APP_PRODUCTS[pi].variants[vi];
   const oldPrice = v.price||0;
   delete v.price;
   v.durations = [{label:'1 Bulan', price:oldPrice}];
-  const pt = document.getElementById('pt-products');
-  if(pt) pt.innerHTML = buildProducts();
+  ss('asha_apps',APP_PRODUCTS);
+  const pt=document.getElementById('pt-products'); if(pt){const s=pt.scrollTop;pt.innerHTML=buildProducts();pt.scrollTop=s;}
 }
 function addSimpleVar(type) {
   const vars = type==='rbx'?ROBUX_VARS:ZOOM_VARS;
