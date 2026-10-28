@@ -1189,6 +1189,7 @@ function pickZm(el,i)  { el.closest('#zmGrid').querySelectorAll('.var-item').for
 /* ══ ORDER FORMS ══ */
 function openForm(type) {
   closeM('catalogM');
+  openM('orderM');
   const body = document.getElementById('orderBody');
   const title = document.getElementById('orderTitle');
 
@@ -1392,7 +1393,7 @@ function checkoutRobux(oid) {
     const v = ROBUX_VARS[window._ri??0];
     rbxLabel = v.label; rbxPrice = v.price;
   }
-  const msg = '✿ ORDER ROBUX - ASHA SPACE ✿\n──────────────────────────\nOrder ID         : '+oid+'\nUsername Roblox  : '+un+'\nDisplay Name     : '+dn+'\nJumlah Robux     : '+rbxLabel+'\nWhatsApp Cust    : '+wa+'\nMetode Bayar     : QRIS\nEstimasi Orderan : 1 - 30 Menit\nTotal Harga      : '+fmt(rbxPrice)+'\nNote             : Sudah mengaktifkan verifikasi 18+\n──────────────────────────\nHalo kak, aku mau bayar pesanan Robux ini via QRIS. Mohon barcode / QRIS-nya ya kak, terima kasih! ♡';
+  const msg = '✿ ORDER ROBUX - ASHA SPACE ✿\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOrder ID        : '+oid+'\nUsername Roblox : '+un+'\nDisplay Name    : '+dn+'\nJumlah Robux    : '+rbxLabel+'\nWhatsApp Cust   : '+wa+'\nMetode Bayar    : QRIS\nEstimasi        : 1 - 30 Menit\nTotal Harga     : '+fmt(rbxPrice)+'\nNote            : Aktifkan verifikasi 18+\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHalo kak, aku mau bayar pesanan Robux ini via QRIS. Mohon barcode / QRIS-nya ya kak, terima kasih! ♡';
   logOrder(oid,'Robux',rbxPrice,rbxLabel);
   window.open(waURL(msg),'_blank');
 }
@@ -1411,7 +1412,7 @@ function checkoutZoom(oid) {
     const v = ZOOM_VARS[window._zi??0];
     zmLabel = v.label; zmPrice = v.price;
   }
-  const msg = '✿ SEWA ZOOM - ASHA SPACE ✿\n──────────────────────────\nOrder ID         : '+oid+'\nTopik Room       : '+tp+'\nTanggal          : '+dt+'\nJam Mulai        : '+tm+'\nDurasi           : '+zmLabel+'\nKapasitas        : 100 Peserta\nPasscode         : '+pc+'\nWhatsApp Cust    : '+wa+'\nMetode Bayar     : QRIS\nEstimasi Orderan : 1 - 15 Menit\nTotal Harga      : '+fmt(zmPrice)+'\n──────────────────────────\nHalo kak, aku mau sewa Zoom via QRIS. Mohon barcode / QRIS-nya ya kak, terima kasih! ♡';
+  const msg = '✿ SEWA ZOOM - ASHA SPACE ✿\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOrder ID        : '+oid+'\nTopik Room      : '+tp+'\nTanggal         : '+dt+'\nJam Mulai       : '+tm+'\nDurasi          : '+zmLabel+'\nKapasitas       : 100 Peserta\nPasscode        : '+pc+'\nWhatsApp Cust   : '+wa+'\nMetode Bayar    : QRIS\nEstimasi        : 1 - 15 Menit\nTotal Harga     : '+fmt(zmPrice)+'\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHalo kak, aku mau sewa Zoom via QRIS. Mohon barcode / QRIS-nya ya kak, terima kasih! ♡';
   logOrder(oid,'Zoom',zmPrice,zmLabel);
   window.open(waURL(msg),'_blank');
 }
@@ -1422,11 +1423,11 @@ function checkoutApp(oid,appId) {
   const dev  = document.getElementById('aDev')?.value?.trim();
   const loc  = document.getElementById('aLoc')?.value?.trim();
   const wa   = document.getElementById('aWa')?.value?.trim()||'(kosong)';
-  const emLine  = em  ? `\nEmail            : ${em}`  : '';
-  const devLine = dev ? `\nMerk Device      : ${dev}` : '';
-  const locLine = loc ? `\nLokasi           : ${loc}` : '';
+  const emLine  = em  ? `\nEmail           : ${em}`  : '';
+  const devLine = dev ? `\nMerk Device     : ${dev}` : '';
+  const locLine = loc ? `\nLokasi          : ${loc}` : '';
   const lyLine  = v.price>=15000 ? '\nLoyalty Stamp   : +1 Stamp Eligible ✨' : '';
-  const msg = `✿ ORDER APP PREMIUM - ASHA SPACE ✿\n──────────────────────────\nOrder ID         : ${oid}\nProduk           : ${app.name}\nVarian           : ${v.label}${emLine}${devLine}${locLine}\nWhatsApp Cust    : ${wa}\nMetode Bayar     : QRIS\nEstimasi Orderan : 1 - 15 Menit\nTotal Harga      : ${fmt(v.price)}${lyLine}\n──────────────────────────\nHalo kak, aku mau bayar pesanan App Premium ini via QRIS. Mohon barcode / QRIS-nya ya kak, terima kasih! ♡`;
+  const msg = `✿ ORDER APP PREMIUM - ASHA SPACE ✿\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOrder ID        : ${oid}\nProduk          : ${app.name}\nVarian          : ${v.label}${emLine}${devLine}${locLine}\nWhatsApp Cust   : ${wa}\nMetode Bayar    : QRIS\nEstimasi        : 1 - 15 Menit\nTotal Harga     : ${fmt(v.price)}${lyLine}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHalo kak, aku mau bayar pesanan App Premium ini via QRIS. Mohon barcode / QRIS-nya ya kak, terima kasih! ♡`;
   logOrder(oid,'App Premium',v.price,app.name+' '+v.label);
   window.open(waURL(msg),'_blank');
 }
@@ -2071,6 +2072,16 @@ window.openCatalogHome = function(){ openM('catalogM'); };
 window.checkoutApp = checkoutApp;
 window.checkoutRobux = checkoutRobux;
 window.checkoutZoom = checkoutZoom;
+window.openForm = openForm;
+window.pickRbx = pickRbx;
+window.pickZm = pickZm;
+window.pickRbxForm = pickRbxForm;
+window.pickRbxCustom = pickRbxCustom;
+window.calcRbxCustom = calcRbxCustom;
+window.pickZmForm = pickZmForm;
+window.pickZmCustom = pickZmCustom;
+window.adjZmCustom = adjZmCustom;
+window.pickAppVar = pickAppVar;
 window.selectApp = selectApp;
 window.renderCatalog = renderCatalog;
 window.renderTerms = renderTerms;
@@ -2081,6 +2092,8 @@ window.showToast = showToast;
 window.applyConfig = applyConfig;
 window.toggleOnlineStatus = toggleOnlineStatus;
 window.loginSeller = loginSeller;
+window.portalLogin = portalLogin;
+window.switchPortalTab = typeof switchPortalTab !== 'undefined' ? switchPortalTab : function(){};
 window.logoutSeller = logoutSeller;
 window.portalTab = portalTab;
 window.buildPortal = buildPortal;
