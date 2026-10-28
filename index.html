@@ -526,11 +526,11 @@ body {
 .lc-user{font-size:13px;color:rgba(30,58,82,.65);margin:0 0 12px}
 .lc-prog{font-family:var(--font-h);font-weight:700;font-size:13px;color:#1e3a52;margin-bottom:11px}
 .stamp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:13px}
-.s-slot{aspect-ratio:1;border-radius:var(--r-md);background:rgba(255,255,255,.45);border:2px dashed rgba(30,58,82,.2);display:flex;align-items:center;justify-content:center;font-size:19px;position:relative;transition:all .2s}
-.s-slot.filled{background:rgba(255,255,255,.82);border-color:rgba(113,186,234,.55);box-shadow:0 2px 8px rgba(113,186,234,.2)}
-.s-slot.ms{background:linear-gradient(135deg,var(--p-yellow),#ffd200);border:2px solid #d4a800}
-.s-slot.ms.filled{box-shadow:0 2px 10px rgba(212,168,0,.3)}
-.s-num{position:absolute;bottom:2px;right:4px;font-size:7.5px;color:rgba(30,58,82,.45);font-weight:800}
+.s-slot{aspect-ratio:1;border-radius:var(--r-md);background:rgba(255,255,255,.35);border:2px dashed rgba(30,58,82,.18);display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;transition:all .25s}
+.s-slot.pink-slot.filled{background:linear-gradient(135deg,#ffe0ee,#ffb8d9);border:2px solid #ff85bb;box-shadow:0 3px 10px rgba(255,130,180,.35)}
+.s-slot.blue-slot.filled{background:linear-gradient(135deg,#caeeff,#90d4f7);border:2px solid #4ab8e8;box-shadow:0 3px 10px rgba(100,185,234,.35)}
+.s-slot.ms.filled{box-shadow:0 3px 12px rgba(212,168,0,.35)}
+.s-num{position:absolute;bottom:2px;right:4px;font-size:7.5px;color:rgba(30,58,82,.4);font-weight:800}
 .lc-voucher{padding:8px 11px;border-radius:var(--r-md);background:rgba(255,255,255,.68);font-size:12px;font-weight:700;color:#2a4a62;margin-bottom:11px;display:flex;align-items:center;gap:6px}
 .lc-note{font-size:11.5px;color:rgba(30,58,82,.6);text-align:center;font-style:italic;margin-bottom:10px}
 
@@ -686,11 +686,11 @@ body {
                 <div style="font-size:9.5px;color:#71BAEA;font-weight:600">followers</div>
               </div>
               <div style="flex:1;padding:7px 0;text-align:center;border-right:1px solid rgba(194,238,251,.6)">
-                <div style="font-family:var(--font-h);font-weight:900;font-size:14px;color:#c06080" id="twLocation">Indonesia</div>
+                <div style="font-family:var(--font-h);font-weight:900;font-size:11px;color:#c06080;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%" id="twLocation">Indonesia</div>
                 <div style="font-size:9.5px;color:#71BAEA;font-weight:600">lokasi</div>
               </div>
               <div style="flex:1;padding:7px 0;text-align:center">
-                <div style="font-family:var(--font-h);font-weight:900;font-size:14px;color:#c06080" id="twJoined">Jan 2024</div>
+                <div style="font-family:var(--font-h);font-weight:900;font-size:11px;color:#c06080;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%" id="twJoined">Jan 2024</div>
                 <div style="font-size:9.5px;color:#71BAEA;font-weight:600">since</div>
               </div>
             </div>
@@ -1305,56 +1305,42 @@ function openForm(type) {
   }
   else if(type==='app') {
     title.textContent='📱 Order App Premium';
-    const oid = genOID('APP');
-    const app = selApp || APP_PRODUCTS[0];
-    // cek apakah varian pertama pakai sistem durasi
-    const firstVar = app.variants[0];
-    const hasDur = firstVar && firstVar.durations;
-    const firstDurPrice = hasDur ? firstVar.durations[0].price : (firstVar ? firstVar.price : 0);
-
-    function renderVarGrid() {
-      return app.variants.map((av,i) => {
-        const hasDurV = !!av.durations;
-        const dispPrice = hasDurV ? fmt(av.durations[0].price)+'+' : fmt(av.price);
-        return `<div class="var-item ${i===0?'sel':''}" onclick="pickAppVar(this,${i})">
-          <span class="var-name">${av.label}</span>
-          <span class="var-price">${dispPrice}</span>
-        </div>`;
-      }).join('');
-    }
-
-    function renderDurGrid(varIdx) {
-      const av = app.variants[varIdx];
-      if(!av || !av.durations) return '';
-      return av.durations.map((d,di) => `
-        <div class="var-item ${di===0?'sel':''}" onclick="pickAppDur(this,${di})">
-          <span class="var-name">📅 ${d.label}</span>
-          <span class="var-price">${fmt(d.price)}</span>
-        </div>`).join('');
-    }
-
-    body.innerHTML=`<div class="fsec">
-      <div class="oid-chip">🎫 ${oid}</div>
-      <div class="fg"><label class="fl">Produk</label>
-        <div class="prod-item sel" style="pointer-events:none">
-          <div class="prod-icon">${app.icon}</div>
-          <div class="prod-info"><div class="prod-name">${app.name}</div><div class="prod-desc">${app.desc}</div></div>
-        </div>
-      </div>
-      <div class="fg"><label class="fl">Pilih Varian</label><div id="aVarGrid" style="display:flex;flex-direction:column;gap:6px">${renderVarGrid()}</div></div>
-      ${hasDur ? `<div class="fg" id="aDurRow"><label class="fl">Pilih Durasi</label><div id="aDurGrid" style="display:flex;flex-direction:column;gap:6px">${renderDurGrid(0)}</div></div>` : ''}
-      <div class="fg">
-        <label class="fl">Email <span style="text-transform:none;font-weight:500;letter-spacing:0">(opsional)</span></label>
-        <input class="fi" id="aEm" type="email" placeholder="masukkan email jika dibutuhkan"/>
-      </div>
-      <div class="fg"><label class="fl">Merk & Tipe Device</label><input class="fi" id="aDev" placeholder="contoh: iPhone 13, Samsung A54, Laptop Asus"/></div>
-      <div class="fg"><label class="fl">Lokasi (Kota/Provinsi)</label><input class="fi" id="aLoc" placeholder="contoh: Jakarta, Surabaya, Bandung"/></div>
-      <div class="fg"><label class="fl">Nomor WhatsApp Kamu</label><input class="fi" id="aWa" type="tel" placeholder="08xxxxxxxxxx"/></div>
-      <div class="pay-lock">🔒 Metode Bayar: <strong>QRIS</strong></div>
-      <div class="est-chip">⏱️ Estimasi: 1 – 15 Menit</div>
-      <div id="lsBadge" class="stamp-badge" style="display:${firstDurPrice>=15000?'flex':'none'}">✨ +1 Loyalty Stamp Eligible — Pembelian ini memenuhi syarat stamp!</div>
-      <button class="cta" onclick="checkoutApp('${oid}','${app.id}')">💬 Checkout via WhatsApp</button>
-    </div>`;
+    var oid2 = genOID('APP');
+    var appO = selApp || APP_PRODUCTS[0];
+    var firstVar2 = appO.variants[0];
+    var hasDur2 = firstVar2 && firstVar2.durations;
+    var firstDurPrice2 = hasDur2 ? firstVar2.durations[0].price : (firstVar2 ? (firstVar2.price||0) : 0);
+    var varGridHtml = appO.variants.map(function(av,i) {
+      var dispPrice = av.durations ? fmt(av.durations[0].price)+'+' : fmt(av.price||0);
+      return '<div class="var-item '+(i===0?'sel':'')+'" onclick="pickAppVar(this,'+i+')">'
+        +'<span class="var-name">'+av.label+'</span>'
+        +'<span class="var-price">'+dispPrice+'</span>'
+        +'</div>';
+    }).join('');
+    var durGridHtml = hasDur2 ? firstVar2.durations.map(function(d,di) {
+      return '<div class="var-item '+(di===0?'sel':'')+'" onclick="pickAppDur(this,'+di+')">'
+        +'<span class="var-name">📅 '+d.label+'</span>'
+        +'<span class="var-price">'+fmt(d.price)+'</span>'
+        +'</div>';
+    }).join('') : '';
+    body.innerHTML='<div class="fsec">'
+      +'<div class="oid-chip">🎫 '+oid2+'</div>'
+      +'<div class="fg"><label class="fl">Produk</label>'
+        +'<div class="prod-item sel" style="pointer-events:none">'
+          +'<div class="prod-icon">'+appO.icon+'</div>'
+          +'<div class="prod-info"><div class="prod-name">'+appO.name+'</div><div class="prod-desc">'+appO.desc+'</div></div>'
+        +'</div></div>'
+      +'<div class="fg"><label class="fl">Pilih Varian</label><div id="aVarGrid" style="display:flex;flex-direction:column;gap:6px">'+varGridHtml+'</div></div>'
+      +(hasDur2 ? '<div class="fg" id="aDurRow"><label class="fl">Pilih Durasi</label><div id="aDurGrid" style="display:flex;flex-direction:column;gap:6px">'+durGridHtml+'</div></div>' : '')
+      +'<div class="fg"><label class="fl">Email <span style="text-transform:none;font-weight:500;letter-spacing:0">(opsional)</span></label><input class="fi" id="aEm" type="email" placeholder="masukkan email jika dibutuhkan"/></div>'
+      +'<div class="fg"><label class="fl">Merk &amp; Tipe Device</label><input class="fi" id="aDev" placeholder="contoh: iPhone 13, Samsung A54, Laptop Asus"/></div>'
+      +'<div class="fg"><label class="fl">Lokasi (Kota/Provinsi)</label><input class="fi" id="aLoc" placeholder="contoh: Jakarta, Surabaya, Bandung"/></div>'
+      +'<div class="fg"><label class="fl">Nomor WhatsApp Kamu</label><input class="fi" id="aWa" type="tel" placeholder="08xxxxxxxxxx"/></div>'
+      +'<div class="pay-lock">🔒 Metode Bayar: <strong>QRIS</strong></div>'
+      +'<div class="est-chip">⏱️ Estimasi: 1 – 15 Menit</div>'
+      +'<div id="lsBadge" class="stamp-badge" style="display:'+(firstDurPrice2>=15000?'flex':'none')+'">✨ +1 Loyalty Stamp Eligible — Pembelian ini memenuhi syarat stamp!</div>'
+      +'<button class="cta" onclick="checkoutApp(\''+oid2+'\',\''+appO.id+'\')">💬 Checkout via WhatsApp</button>'
+      +'</div>';
     selAppVarIdx = 0;
     window._selAppDurIdx = 0;
   }
@@ -1474,13 +1460,9 @@ function pickAppVar(el,i)  {
     if(badge) badge.style.display = av.durations[0].price>=15000 ? 'flex':'none';
   } else if(durRow) {
     durRow.style.display = 'none';
-    // update stamp badge dengan harga flat
-    const badge = document.getElementById('lsBadge');
-    if(badge) badge.style.display = (av&&av.price>=15000) ? 'flex':'none';
+    var badge2 = document.getElementById('lsBadge');
+    if(badge2) badge2.style.display = (av&&av.price>=15000) ? 'flex':'none';
   }
-  const app = selApp||APP_PRODUCTS[0];
-  const badge = document.getElementById('lsBadge');
-  if(badge) badge.style.display = app.variants[i].price>=15000?'flex':'none';
 }
 
 /* ══ CHECKOUT HELPERS ══ */
@@ -1605,11 +1587,32 @@ function renderLoyaltyHTML() {
   } else {
     const data = LOYALTY_USERS[loyUser] || { username:loyUser, stamps:0, vouchers:[] };
     const s = data.stamps||0;
+    // SVG outline icons — same style as nav tabs (fill:none, stroke)
+    const svgFlower = (col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a3 3 0 0 1 3 3c0 1.5-1 2.5-1 3s1 1.5 1 3a3 3 0 0 1-6 0c0-1.5 1-2.5 1-3s-1-1.5-1-3a3 3 0 0 1 3-3z"/><path d="M2 12a3 3 0 0 1 3-3c1.5 0 2.5 1 3 1s1.5-1 3-1a3 3 0 0 1 0 6c-1.5 0-2.5-1-3-1s-1.5 1-3 1a3 3 0 0 1-3-3z"/></svg>`;
+    const svgHeart = (col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    const svgStar  = (col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    const svgSparkle=(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>`;
+    const svgRibbon=(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 1-4.5 4 1.5 6L12 16l-6 3 1.5-6L3 9l6-1z"/><circle cx="12" cy="12" r="2"/></svg>`;
+    const svgGift  =(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>`;
+    const svgEmpty =(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`;
+    const svgButterfly=(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12c-2-2.5-4-4-6-4a4 4 0 0 0 0 8c2 0 4-1.5 6-4z"/><path d="M12 12c2-2.5 4-4 6-4a4 4 0 0 1 0 8c-2 0-4-1.5-6-4z"/><path d="M12 5v14"/></svg>`;
+    const svgSun    =(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>`;
+    const pinkSvgs = [svgFlower,svgHeart,svgButterfly,svgSun];
+    const svgDiamond=(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L12 2l10 10-10 10z"/></svg>`;
+    const svgMoon   =(col)=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    const blueSvgs = [svgStar,svgDiamond,svgMoon,svgSparkle];
     const slots = Array.from({length:8},(_,i)=>{
       const filled = i<s;
       const ms = i===3||i===7;
-      const ico = ms ? (i===3?'⭐':'🎁') : (['💗','🎀','✿'][i%3]);
-      return `<div class="s-slot ${ms?'ms':''} ${filled?'filled':''}">${(filled||ms)?`<span>${ico}</span>`:''}<span class="s-num">${i+1}</span></div>`;
+      const isPink = i<4;
+      const slotClass = isPink ? 'pink-slot' : 'blue-slot';
+      const fillCol = isPink ? '#e0609a' : '#2a88cc';
+      const emptyCol = isPink ? '#e0a0c0' : '#90b8d8';
+      let svgIcon;
+      if(ms) svgIcon = i===3 ? svgRibbon(filled?'#c0880a':'#d4a840') : svgGift(filled?'#c0880a':'#d4a840');
+      else if(filled) svgIcon = isPink ? pinkSvgs[i](fillCol) : blueSvgs[i-4](fillCol);
+      else svgIcon = svgEmpty(emptyCol);
+      return `<div class="s-slot ${slotClass} ${ms?'ms':''} ${filled?'filled':''}">${svgIcon}<span class="s-num">${i+1}</span></div>`;
     }).join('');
     const v15 = s>=4&&!(data.vouchers||[]).includes('disc15');
     const vfr = s>=8&&!(data.vouchers||[]).includes('freeapp');
